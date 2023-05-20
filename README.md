@@ -109,11 +109,11 @@
       updateScore();
 
       if (score === 100) {
-        awardMedal("gold");
+        awardMedal("bronze");
       } else if (score === 1000) {
         awardMedal("silver");
       } else if (score === 5000) {
-        awardMedal("bronze");
+        awardMedal("gold");
       }
     }
 
