@@ -92,59 +92,36 @@
   <div id="medalFrame">Medals: <span id="medals"></span></div>
   <div id="globalScoreFrame">Global Score: <span id="globalScore">Loading...</span></div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
   <script>
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCE04GkMZHC6CW_bxGPmw9ct3ASUJvFYxg",
-      authDomain: "my-project-1684241537544.firebaseapp.com",
-      projectId: "my-project-1684241537544",
-      storageBucket: "my-project-1684241537544.appspot.com",
-      messagingSenderId: "836051800622",
-      appId: "1:836051800622:web:00426d50818f04c3ef45bf",
-      measurementId: "G-697PNJFGF0"
+    // Client-side JavaScript code
+    // Add your custom code here to handle game functionality
+
+    var gameContainer = document.getElementById("gameContainer");
+    var character = document.getElementById("character");
+    var score = 0;
+    var medals = [];
+    var globalScoreRef;
+
+    var firebaseConfig = {
+      // Your Firebase configuration goes here
+      // Replace with your own Firebase project's config
     };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
     // Get a reference to the global score in the database
-    const globalScoreRef = firebase.database().ref("globalScore");
+    globalScoreRef = firebase.database().ref("globalScore");
 
     // Listen for changes in the global score and update the display
-    globalScoreRef.on("value", (snapshot) => {
-      const globalScore = snapshot.val();
+    globalScoreRef.on("value", function(snapshot) {
+      var globalScore = snapshot.val();
       document.getElementById("globalScore").innerText = globalScore || 0;
     });
 
-    // Client-side JavaScript code
-    // Add your custom code here to handle game functionality
-
-    const gameContainer = document.getElementById("gameContainer");
-    const character = document.getElementById("character");
-    let score = 0;
-    const medals = [];
-
-    function deployCoin() {
-      const coin = document.createElement("div");
-      coin.className = "coin";
-
-      // Randomly position the coin within the game container
-      const coinX = Math.random() * (gameContainer.offsetWidth - coin.offsetWidth);
-      const coinY = Math.random() * (gameContainer.offsetHeight - coin.offsetHeight);
-      coin.style.left = coinX + "px";
-      coin.style.top = coinY + "px";
-
-      // Attach a click event listener to collect the coin when clicked
-      coin.addEventListener("click", () => {
-        moveCharacterToCoin(coin);
-      });
-
-      // Append the coin to the game container
-      gameContainer.appendChild(coin);
-    }
-
+    // Function to collect a coin and update the score
     function collectCoin(coin) {
       coin.remove();
       score += 10;
@@ -157,36 +134,39 @@
       } else if (score === 5000) {
         awardMedal("#FFA500");
       }
-      globalScoreRef.transaction((currentScore) => (currentScore || 0) + 10);
-      deployCoin();
+
+      // Update the global score in the database
+      globalScoreRef.transaction(function(currentScore) {
+        return (currentScore || 0) + 10;
+      });
     }
 
     // Function to move the character to the coins
     function moveCharacterToCoin(coin) {
-      const characterPosition = {
+      var characterPosition = {
         x: character.offsetLeft + character.offsetWidth / 2,
         y: character.offsetTop + character.offsetHeight / 2
       };
 
-      const coinPosition = {
+      var coinPosition = {
         x: coin.offsetLeft + coin.offsetWidth / 2,
         y: coin.offsetTop + coin.offsetHeight / 2
       };
 
-      const dx = coinPosition.x - characterPosition.x;
-      const dy = coinPosition.y - characterPosition.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      var dx = coinPosition.x - characterPosition.x;
+      var dy = coinPosition.y - characterPosition.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
 
-      const speed = 3;
-      const duration = distance / speed;
+      var speed = 3;
+      var duration = distance / speed;
 
-      let startTime = null;
+      var startTime = null;
       function step(timestamp) {
         if (!startTime) startTime = timestamp;
-        const progress = timestamp - startTime;
+        var progress = timestamp - startTime;
 
-        const newX = characterPosition.x + (dx / duration) * progress;
-        const newY = characterPosition.y + (dy / duration) * progress;
+        var newX = characterPosition.x + (dx / duration) * progress;
+        var newY = characterPosition.y + (dy / duration) * progress;
 
         character.style.left = newX - character.offsetWidth / 2 + "px";
         character.style.top = newY - character.offsetHeight / 2 + "px";
@@ -208,15 +188,12 @@
 
     // Function to award a medal
     function awardMedal(type) {
-      const medal = document.createElement("div");
+      var medal = document.createElement("div");
       medal.className = "medal";
       medal.style.backgroundColor = type;
       document.getElementById("medals").appendChild(medal);
       medals.push(type);
     }
-
-    // Call the deployCoin function to start deploying coins
-    deployCoin();
   </script>
 </body>
 </html>
