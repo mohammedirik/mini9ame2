@@ -70,17 +70,6 @@
       margin-right: 5px;
       border-radius: 50%;
     }
-
-    #globalScoreFrame {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      padding: 10px;
-      background-color: #FFFFFF;
-      color: #000000;
-      font-size: 18px;
-      border-radius: 5px;
-    }
   </style>
 </head>
 <body>
@@ -90,10 +79,7 @@
   
   <div id="scoreFrame">Score: <span id="score">0</span></div>
   <div id="medalFrame">Medals: <span id="medals"></span></div>
-  <div id="globalScoreFrame">Global Score: <span id="globalScore">Loading...</span></div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
   <script>
     // Client-side JavaScript code
     // Add your custom code here to handle game functionality
@@ -102,52 +88,36 @@
     var character = document.getElementById("character");
     var score = 0;
     var medals = [];
-    var globalScoreRef;
 
-    var firebaseConfig = {
-      // Your Firebase configuration goes here
-      // Replace with your own Firebase project's config
-    };
+    gameContainer.addEventListener("click", collectCoin);
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
+    function collectCoin(event) {
+      var coin = document.createElement("div");
+      coin.className = "coin";
+      coin.style.top = event.clientY - 15 + "px";
+      coin.style.left = event.clientX - 15 + "px";
+      gameContainer.appendChild(coin);
 
-    // Get a reference to the global score in the database
-    globalScoreRef = firebase.database().ref("globalScore");
-
-    // Listen for changes in the global score and update the display
-    globalScoreRef.on("value", function(snapshot) {
-      var globalScore = snapshot.val();
-      document.getElementById("globalScore").innerText = globalScore || 0;
-    });
-
-    // Function to collect a coin and update the score
-    function collectCoin(coin) {
-      coin.remove();
-      score += 10;
-      updateScore();
-
-      if (score === 100) {
-        awardMedal("#FFD700");
-      } else if (score === 1000) {
-        awardMedal("#C0C0C0");
-      } else if (score === 5000) {
-        awardMedal("#FFA500");
-      }
-
-      // Update the global score in the database
-      globalScoreRef.transaction(function(currentScore) {
-        return (currentScore || 0) + 10;
-      });
-    }
-
-    // Function to move the character to the coins
-    function moveCharacterToCoin(coin) {
       var characterPosition = {
         x: character.offsetLeft + character.offsetWidth / 2,
         y: character.offsetTop + character.offsetHeight / 2
       };
 
+      moveCharacterToCoin(characterPosition, coin);
+
+      score++;
+      updateScore();
+
+      if (score === 100) {
+        awardMedal("gold");
+      } else if (score === 1000) {
+        awardMedal("silver");
+      } else if (score === 5000) {
+        awardMedal("bronze");
+      }
+    }
+
+    function moveCharacterToCoin(characterPosition, coin) {
       var coinPosition = {
         x: coin.offsetLeft + coin.offsetWidth / 2,
         y: coin.offsetTop + coin.offsetHeight / 2
@@ -174,19 +144,17 @@
         if (progress < duration) {
           window.requestAnimationFrame(step);
         } else {
-          collectCoin(coin);
+          gameContainer.removeChild(coin);
         }
       }
 
       window.requestAnimationFrame(step);
     }
 
-    // Function to update the score display
     function updateScore() {
       document.getElementById("score").innerText = score;
     }
 
-    // Function to award a medal
     function awardMedal(type) {
       var medal = document.createElement("div");
       medal.className = "medal";
